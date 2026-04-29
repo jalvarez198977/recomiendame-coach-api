@@ -191,14 +191,33 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
         ? 'gpt-4o'  // GPT-4 Vision
         : this.model;
 
-      const completion = await this.client.chat.completions.create({
+      console.log('📤 Llamando a OpenAI:', {
+        model: modelToUse,
+        hasImages: !!(equipmentImageUrls && equipmentImageUrls.length > 0),
+        imageCount: equipmentImageUrls?.length || 0,
+        imageUrls: equipmentImageUrls,
+      });
+
+      const completionParams: any = {
         model: modelToUse,
         temperature: 0.4,
-        response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: system },
           userMessage,
         ],
+      };
+
+      // Solo agregar response_format si NO hay imágenes
+      // GPT-4o con imágenes puede tener problemas con json_object mode
+      if (!equipmentImageUrls || equipmentImageUrls.length === 0) {
+        completionParams.response_format = { type: 'json_object' };
+      }
+
+      const completion = await this.client.chat.completions.create(completionParams);
+
+      console.log('📥 Respuesta de OpenAI recibida:', {
+        model: completion.model,
+        usage: completion.usage,
       });
 
       const raw = completion.choices[0]?.message?.content ?? '{}';
@@ -228,6 +247,12 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
 
       return { days, notes: parsed.data.notes };
     } catch (e: any) {
+      console.error('❌ WorkoutPlannerAgent error:', {
+        message: e.message,
+        stack: e.stack,
+        response: e.response?.data,
+        status: e.response?.status,
+      });
       throw new InternalServerErrorException(`WorkoutPlannerAgent error: ${e.message}`);
     }
   }
