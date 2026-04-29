@@ -45,6 +45,25 @@ export class PostPrismaRepository implements PostRepositoryPort {
     return !!r;
   }
 
+  async delete(input: { postId: string; authorId: string }): Promise<void> {
+    // Verificar que el post existe y pertenece al usuario
+    const post = await this.prisma.post.findUnique({
+      where: { id: input.postId },
+      select: { authorId: true },
+    });
+
+    if (!post) {
+      throw new Error('Post no encontrado');
+    }
+
+    if (post.authorId !== input.authorId) {
+      throw new Error('No tienes permiso para eliminar este post');
+    }
+
+    // Eliminar el post (cascade eliminará likes y comments automáticamente)
+    await this.prisma.post.delete({ where: { id: input.postId } });
+  }
+
   async getPostsByUser(userId: string, params: { skip: number; take: number; date?: string }) {
     const where: any = { authorId: userId };
     

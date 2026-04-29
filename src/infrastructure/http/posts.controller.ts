@@ -12,12 +12,15 @@ import {
   ValidationPipe,
   UseInterceptors,
   UploadedFile,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreatePostUseCase } from '../../core/application/posts/use-cases/create-post.usecase';
 import { LikePostUseCase } from '../../core/application/posts/use-cases/like-post.usecase';
 import { UnlikePostUseCase } from '../../core/application/posts/use-cases/unlike-post.usecase';
+import { DeletePostUseCase } from '../../core/application/posts/use-cases/delete-post.usecase';
 import { CreatePostDto } from '../../core/application/posts/dto/create-post.dto';
 import { CreateCommentUseCase } from '../../core/application/posts/use-cases/create-comment.usecase';
 import { DeleteCommentUseCase } from '../../core/application/posts/use-cases/delete-comment.usecase';
@@ -40,6 +43,7 @@ export class PostsController {
     private readonly createPost: CreatePostUseCase,
     private readonly likePost: LikePostUseCase,
     private readonly unlikePost: UnlikePostUseCase,
+    private readonly deletePost: DeletePostUseCase,
     private readonly createComment: CreateCommentUseCase,
     private readonly deleteComment: DeleteCommentUseCase,
     private readonly listComments: ListCommentsUseCase,
@@ -165,5 +169,11 @@ export class PostsController {
   @Delete(':id/comments/:commentId')
   removeComment(@Param('commentId') commentId: string, @Req() req: any) {
     return this.deleteComment.execute(req.user.userId, commentId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removePost(@Param('id') postId: string, @Req() req: any) {
+    return this.deletePost.execute(req.user.userId, postId);
   }
 }

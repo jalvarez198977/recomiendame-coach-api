@@ -3,6 +3,7 @@ import { PostsController } from '../infrastructure/http/posts.controller';
 import { CreatePostUseCase } from '../core/application/posts/use-cases/create-post.usecase';
 import { LikePostUseCase } from '../core/application/posts/use-cases/like-post.usecase';
 import { UnlikePostUseCase } from '../core/application/posts/use-cases/unlike-post.usecase';
+import { DeletePostUseCase } from '../core/application/posts/use-cases/delete-post.usecase';
 import { POST_REPOSITORY } from '../core/application/posts/ports/out.post-repository.port';
 import { PostPrismaRepository } from '../infrastructure/persistence/prisma/post.prisma.repository';
 import { CreateCommentUseCase } from '../core/application/posts/use-cases/create-comment.usecase';
@@ -25,6 +26,7 @@ import { StorageModule } from '../infrastructure/storage/storage.module';
     CreatePostUseCase,
     LikePostUseCase,
     UnlikePostUseCase,
+    DeletePostUseCase,
     { provide: POST_REPOSITORY, useClass: PostPrismaRepository },
     CreateCommentUseCase,
     DeleteCommentUseCase,

@@ -24,5 +24,6 @@ export interface PostRepositoryPort {
   hasLike(input: { userId: string; postId: string }): Promise<boolean>;
   getPostsByUser(userId: string, params: { skip: number; take: number; date?: string }): Promise<{ items: PostItem[]; total: number }>;
   getPublicPosts(userId: string, params: { skip: number; take: number }): Promise<{ items: PostItem[]; total: number }>;
+  delete(input: { postId: string; authorId: string }): Promise<void>;
 }
 export const POST_REPOSITORY = Symbol('POST_REPOSITORY');
