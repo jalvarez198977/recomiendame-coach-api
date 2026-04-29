@@ -197,13 +197,6 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
         ? 'gpt-4o'  // GPT-4 Vision
         : this.model;
 
-      console.log('📤 Llamando a OpenAI:', {
-        model: modelToUse,
-        hasImages: !!(equipmentImageUrls && equipmentImageUrls.length > 0),
-        imageCount: equipmentImageUrls?.length || 0,
-        imageUrls: equipmentImageUrls,
-      });
-
       const completionParams: any = {
         model: modelToUse,
         temperature: 0.4,
@@ -221,23 +214,12 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
 
       const completion = await this.client.chat.completions.create(completionParams);
 
-      console.log('📥 Respuesta de OpenAI recibida:', {
-        model: completion.model,
-        usage: completion.usage,
-      });
-
       const raw = completion.choices[0]?.message?.content ?? '{}';
-      console.log('📄 Respuesta raw de OpenAI (primeros 500 chars):', raw.substring(0, 500));
-      
       const json = this.sanitizeToJson(raw);
-      console.log('🧹 JSON sanitizado (primeros 500 chars):', json.substring(0, 500));
-      
       const parsed = WeekResponseSchema.safeParse(JSON.parse(json));
 
       if (!parsed.success) {
-        console.error('❌ Error de validación Zod:', parsed.error.errors);
-        console.error('📄 JSON completo que falló:', json);
-        throw new Error(`Error validación JSON Workout: ${JSON.stringify(parsed.error.errors, null, 2)}`);
+        throw new Error(`Error validación JSON Workout: ${parsed.error.message}`);
       }
 
       // Validar que todos los días generados cumplan con startDayIndex
@@ -259,12 +241,6 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
 
       return { days, notes: parsed.data.notes };
     } catch (e: any) {
-      console.error('❌ WorkoutPlannerAgent error:', {
-        message: e.message,
-        stack: e.stack,
-        response: e.response?.data,
-        status: e.response?.status,
-      });
       throw new InternalServerErrorException(`WorkoutPlannerAgent error: ${e.message}`);
     }
   }

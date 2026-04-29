@@ -36,41 +36,20 @@ export class WorkoutsController {
   ) {
     const userId = req.user.userId ?? req.user.sub;
 
-    console.log('🏋️ Generando plan de entrenamiento:', {
+    const result = await this.generateWeeklyPlan.execute({
       userId,
       isoWeek: body.isoWeek,
-      daysAvailable: body.daysAvailable,
-      goal: body.goal,
+      daysAvailable: body.daysAvailable ?? 4,
+      goal: body.goal ?? 'GENERAL',
       environment: body.environment,
       equipmentImageUrls: body.equipmentImageUrls,
-      equipmentImages: body.equipmentImageUrls?.length || 0,
-      startDayIndex: body.startDayIndex,
+      startDayIndex: body.startDayIndex ?? 1,
     });
 
-    try {
-      const result = await this.generateWeeklyPlan.execute({
-        userId,
-        isoWeek: body.isoWeek,
-        daysAvailable: body.daysAvailable ?? 4,
-        goal: body.goal ?? 'GENERAL',
-        environment: body.environment,
-        equipmentImageUrls: body.equipmentImageUrls,
-        startDayIndex: body.startDayIndex ?? 1,
-      });
-
-      if (result.ok) {
-        console.log('✅ Plan generado exitosamente:', result.value);
-        return result.value;
-      } else {
-        console.error('❌ Error generando plan:', result.error);
-        throw result.error;
-      }
-    } catch (error: any) {
-      console.error('❌ Error en generate endpoint:', {
-        message: error.message,
-        stack: error.stack,
-      });
-      throw error;
+    if (result.ok) {
+      return result.value;
+    } else {
+      throw result.error;
     }
   }
 
