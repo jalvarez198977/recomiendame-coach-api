@@ -21,7 +21,7 @@ const ExerciseSchema = z.object({
 
 const DayResponseSchema = z.object({
   dayIndex: z.number().int().min(1).max(7),
-  exercises: z.array(ExerciseSchema).min(3),
+  exercises: z.array(ExerciseSchema).min(1), // Reducido de 3 a 1 para ser más flexible
 });
 
 const WeekResponseSchema = z.object({
@@ -80,6 +80,11 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
       NO incluyas ejercicios que requieran equipamiento que no aparezca en las imágenes.
       Si ves mancuernas, usa ejercicios con mancuernas. Si ves máquinas específicas, úsalas.
       Sé creativo con el equipamiento disponible para cumplir el objetivo del usuario.
+      
+      **CANTIDAD DE EJERCICIOS:**
+      - Genera MÍNIMO 4-6 ejercicios por día de entrenamiento.
+      - Incluye ejercicios compuestos y de aislamiento.
+      - Varía los ejercicios entre días para trabajar diferentes grupos musculares.
       `;
       } else {
         const env = (environment || 'GYM').toUpperCase();
@@ -137,6 +142,7 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
       **Requisitos:**
       - Genera exactamente ${daysAvailable} días de entrenamiento.
       - Distribuye los días lógicamente desde ${startDayName} en adelante.
+      - **IMPORTANTE: Cada día debe tener MÍNIMO 4-6 ejercicios.**
       - Incluye ejercicios compuestos y de aislamiento según el objetivo.
       - Especifica series, repeticiones (rango), y descanso sugerido.
       - **VISUALIZACIÓN:** Para cada ejercicio, incluye:
@@ -221,11 +227,17 @@ export class OpenAIWorkoutPlannerAgent implements WorkoutPlannerAgentPort {
       });
 
       const raw = completion.choices[0]?.message?.content ?? '{}';
+      console.log('📄 Respuesta raw de OpenAI (primeros 500 chars):', raw.substring(0, 500));
+      
       const json = this.sanitizeToJson(raw);
+      console.log('🧹 JSON sanitizado (primeros 500 chars):', json.substring(0, 500));
+      
       const parsed = WeekResponseSchema.safeParse(JSON.parse(json));
 
       if (!parsed.success) {
-        throw new Error(`Error validación JSON Workout: ${parsed.error.message}`);
+        console.error('❌ Error de validación Zod:', parsed.error.errors);
+        console.error('📄 JSON completo que falló:', json);
+        throw new Error(`Error validación JSON Workout: ${JSON.stringify(parsed.error.errors, null, 2)}`);
       }
 
       // Validar que todos los días generados cumplan con startDayIndex
