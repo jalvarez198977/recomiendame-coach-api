@@ -33,7 +33,6 @@ npx prisma migrate resolve --applied "20260401000001_add_nutrition_product" 2>/d
 npx prisma migrate resolve --applied "20260401000002_add_nutrition_product_fields" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260409000000_add_payment_table" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260508000000_add_clerk_id" 2>/dev/null || true
 
 if ! npx prisma migrate deploy 2>&1; then
   echo "⚠️  Error al aplicar migraciones. Haciendo baseline completo..."
