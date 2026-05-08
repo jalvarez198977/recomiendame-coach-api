@@ -32,6 +32,10 @@ import { ACCOUNT_DELETION_REPO } from 'src/core/application/auth/ports/out.accou
 import { AccountDeletionPrismaRepository } from 'src/infrastructure/persistence/prisma/account-deletion.prisma.repository';
 import { AuthAccountDeletionController } from 'src/infrastructure/http/auth.account-deletion.controller';
 import { AccountDeletionController } from 'src/infrastructure/http/account-deletion.controller';
+import { AuthClerkController } from 'src/infrastructure/http/auth.clerk.controller';
+import { ClerkAuthUseCase } from 'src/core/application/auth/use-cases/clerk-auth.usecase';
+import { CLERK_AUTH_REPOSITORY } from 'src/core/application/auth/ports/out.clerk-auth-repository.port';
+import { ClerkAuthPrismaRepository } from 'src/infrastructure/persistence/prisma/clerk-auth.prisma.repository';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { PrismaModule } from '../infrastructure/database/prisma.module';
@@ -71,7 +75,7 @@ const templateDir = templateDirCandidates.find((dir) => existsSync(dir)) ?? temp
       },
     }),
   ],
-  controllers: [AuthController, AuthVerifyController, AuthAccountDeletionController, AccountDeletionController],
+  controllers: [AuthController, AuthVerifyController, AuthAccountDeletionController, AccountDeletionController, AuthClerkController],
   providers: [
     LoginUseCase,
     RequestResetPasswordUseCase,
@@ -87,6 +91,8 @@ const templateDir = templateDirCandidates.find((dir) => existsSync(dir)) ?? temp
     { provide: MAILER_PORT, useClass: EmailAdapter },
     RequestEmailVerificationUseCase, ResendEmailVerificationUseCase, VerifyEmailUseCase,
     RequestAccountDeletionUseCase, ConfirmAccountDeletionUseCase,
+    ClerkAuthUseCase,
+    { provide: CLERK_AUTH_REPOSITORY, useClass: ClerkAuthPrismaRepository },
   ],
   exports: [],
 })
