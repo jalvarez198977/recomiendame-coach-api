@@ -239,15 +239,27 @@ export class UsersController {
       .filter(([, cfg]) => cfg.tier === 'FREE_LIMITED')
       .map(([key, cfg]) => ({ key, limit: cfg.limit!, window: cfg.window! }));
 
+    // Features PRO-only: siempre sin límite
+    const PRO_ONLY_FEATURES = Object.entries(FEATURE_GATES)
+      .filter(([, cfg]) => cfg.tier === 'PRO')
+      .map(([key]) => key);
+
     const features: Record<string, any> = {};
 
+    // PRO-only features: sin límite para todos
+    for (const key of PRO_ONLY_FEATURES) {
+      features[key] = { current: 0, limit: null, resetsAt: null };
+    }
+
     if (user?.plan === 'PRO') {
+      // PRO: todas las features limitadas también quedan sin límite
       for (const f of FREE_LIMITED_FEATURES) {
         features[f.key] = { current: 0, limit: null, resetsAt: null };
       }
       return { features };
     }
 
+    // FREE: calcular uso real de features limitadas
     const now = new Date();
     for (const f of FREE_LIMITED_FEATURES) {
       const { start, end } = computeWindowBounds(f.window, now);

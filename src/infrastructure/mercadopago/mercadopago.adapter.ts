@@ -96,4 +96,13 @@ export class MercadoPagoAdapter implements IPaymentPort {
       externalReference: sub.external_reference ?? '',
     };
   }
+
+  async cancelSubscription(subscriptionId: string): Promise<void> {
+    const preApproval = new PreApproval(this.client);
+    await preApproval.update({
+      id: subscriptionId,
+      body: { status: 'cancelled' },
+    });
+    this.logger.log(`PreApproval cancelado: id=${subscriptionId}`);
+  }
 }

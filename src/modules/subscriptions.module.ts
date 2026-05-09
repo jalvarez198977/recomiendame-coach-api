@@ -8,6 +8,7 @@ import { CreateCheckoutSessionUseCase } from '../core/application/subscriptions/
 import { HandleWebhookUseCase } from '../core/application/subscriptions/use-cases/handle-webhook.usecase';
 import { GetSubscriptionStatusUseCase } from '../core/application/subscriptions/use-cases/get-subscription-status.usecase';
 import { ActivatePlanFromPreapprovalUseCase } from '../core/application/subscriptions/use-cases/activate-plan-from-preapproval.usecase';
+import { CancelSubscriptionUseCase } from '../core/application/subscriptions/use-cases/cancel-subscription.usecase';
 import { PrismaService } from '../infrastructure/database/prisma.service';
 import { PlanExpiryService } from './plan-expiry.service';
 
@@ -20,6 +21,7 @@ import { PlanExpiryService } from './plan-expiry.service';
     HandleWebhookUseCase,
     GetSubscriptionStatusUseCase,
     ActivatePlanFromPreapprovalUseCase,
+    CancelSubscriptionUseCase,
     PrismaService,
     ConfigService,
     PlanExpiryService,

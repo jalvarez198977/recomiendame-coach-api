@@ -28,6 +28,7 @@ export interface IPaymentPort {
   createSubscriptionLink(input: CreateSubscriptionInput): Promise<{ url: string; subscriptionId: string }>;
   parseWebhookEvent(payload: Record<string, any>): Promise<PaymentWebhookEvent>;
   getSubscription(subscriptionId: string): Promise<SubscriptionData>;
+  cancelSubscription(subscriptionId: string): Promise<void>;
 }
 
 export const PAYMENT_PORT = Symbol('PAYMENT_PORT');

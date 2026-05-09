@@ -18,6 +18,7 @@ import { CreateCheckoutSessionUseCase } from '../../core/application/subscriptio
 import { HandleWebhookUseCase } from '../../core/application/subscriptions/use-cases/handle-webhook.usecase';
 import { GetSubscriptionStatusUseCase } from '../../core/application/subscriptions/use-cases/get-subscription-status.usecase';
 import { ActivatePlanFromPreapprovalUseCase } from '../../core/application/subscriptions/use-cases/activate-plan-from-preapproval.usecase';
+import { CancelSubscriptionUseCase } from '../../core/application/subscriptions/use-cases/cancel-subscription.usecase';
 import { CreateCheckoutDto } from './dto/create-checkout.dto';
 
 @Controller('subscriptions')
@@ -28,6 +29,7 @@ export class SubscriptionsController {
     private readonly handleWebhook: HandleWebhookUseCase,
     private readonly getSubscriptionStatus: GetSubscriptionStatusUseCase,
     private readonly activatePlanFromPreapproval: ActivatePlanFromPreapprovalUseCase,
+    private readonly cancelSubscription: CancelSubscriptionUseCase,
     private readonly configService: ConfigService,
   ) {}
 
@@ -80,5 +82,12 @@ export class SubscriptionsController {
   @UseGuards(JwtAuthGuard)
   status(@Req() req: any) {
     return this.getSubscriptionStatus.execute(req.user.userId);
+  }
+
+  @Post('cancel')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  cancel(@Req() req: any) {
+    return this.cancelSubscription.execute(req.user.userId);
   }
 }
