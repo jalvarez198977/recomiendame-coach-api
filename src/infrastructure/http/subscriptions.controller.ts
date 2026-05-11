@@ -12,7 +12,6 @@ import {
   ValidationPipe,
   BadRequestException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCheckoutSessionUseCase } from '../../core/application/subscriptions/use-cases/create-checkout-session.usecase';
 import { HandleWebhookUseCase } from '../../core/application/subscriptions/use-cases/handle-webhook.usecase';
@@ -32,7 +31,6 @@ export class SubscriptionsController {
     private readonly getSubscriptionPlans: GetSubscriptionPlansUseCase,
     private readonly activatePlanFromPreapproval: ActivatePlanFromPreapprovalUseCase,
     private readonly cancelSubscription: CancelSubscriptionUseCase,
-    private readonly configService: ConfigService,
   ) {}
 
   @Get('plans')
@@ -43,35 +41,34 @@ export class SubscriptionsController {
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
   async checkout(@Req() req: any, @Body() dto: CreateCheckoutDto) {
-    const monthlyId = this.configService.get<string>('MP_PLAN_MONTHLY_ID')!;
-    const annualId = this.configService.get<string>('MP_PLAN_ANNUAL_ID')!;
-
-    let planId: string;
-    if (dto.planType) {
-      planId = dto.planType === 'annual' ? annualId : monthlyId;
-    } else if (dto.priceId === annualId) {
-      planId = annualId;
-    } else {
-      // fallback: cualquier priceId desconocido o el monthly ID → monthly
-      planId = monthlyId;
-    }
-
+    const planType = dto.planType ?? 'monthly';
     const result = await this.createCheckoutSession.execute({
       userId: req.user.userId,
-      planId,
-      planType: dto.planType ?? (planId === annualId ? 'annual' : 'monthly'),
+      planId: planType,
+      planType,
     });
     return { checkoutUrl: result.checkoutUrl };
   }
 
   @Get('payment-return')
   @Redirect()
-  async paymentReturn(@Query('preapproval_id') preapprovalId: string) {
+  async paymentReturn(
+    @Query('preapproval_id') preapprovalId: string,
+    @Query('status') status: string,
+  ) {
     if (preapprovalId) {
       await this.activatePlanFromPreapproval.execute(preapprovalId);
     }
-    const frontUrl = this.configService.get<string>('FRONT_URL') ?? 'https://recomiendameapp.cl';
-    return { url: `${frontUrl}/subscription/success`, statusCode: 302 };
+
+    // Redirigir al deep link de la app según el estado del pago
+    if (status === 'failure') {
+      return { url: 'coachapp://payment-failure', statusCode: 302 };
+    }
+    if (status === 'pending') {
+      return { url: 'coachapp://payment-pending', statusCode: 302 };
+    }
+    // approved o sin status → success
+    return { url: 'coachapp://payment-success', statusCode: 302 };
   }
 
   @Post('webhook')
