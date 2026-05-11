@@ -4,9 +4,9 @@ import { GenerateWeeklyPlanUseCase } from '../core/application/plans/use-cases/g
 import { PLAN_REPOSITORY } from '../core/application/plans/ports/out.plan-repository.port';
 import { PlanPrismaRepository } from '../infrastructure/persistence/prisma/plan.prisma.repository';
 import { MEAL_PLANNER_AGENT } from '../core/application/plans/ports/out.meal-planner-agent.port';
-//import { FakeMealPlannerAgent } from '../infrastructure/ai/meal-planner.agent.fake';
 import { NOTIFICATION_PORT } from '../core/application/plans/ports/out.notification.port';
 import { InAppNotificationAdapter } from '../infrastructure/notifications/inapp.notification.adapter';
+import { PushNotificationsService } from './push-notifications.service';
 import { GetPlanByIdUseCase } from 'src/core/application/plans/use-cases/get-plan-by-id.usecase';
 import { DeleteMealPlanUseCase } from 'src/core/application/plans/use-cases/delete-meal-plan.usecase';
 import { GetPlanByWeekUseCase } from 'src/core/application/plans/use-cases/get-plan-by-week.usecase';
@@ -36,9 +36,9 @@ import { UnitConverterService } from 'src/core/application/plans/services/unit-c
     GenerateShoppingListUseCase,
     MacrosService,
     UnitConverterService,
+    PushNotificationsService,
     { provide: PLAN_REPOSITORY, useClass: PlanPrismaRepository },
-    { provide: MEAL_PLANNER_AGENT, useClass: OpenAIMealPlannerAgent }, 
-    //{ provide: MEAL_PLANNER_AGENT, useClass: FakeMealPlannerAgent },
+    { provide: MEAL_PLANNER_AGENT, useClass: OpenAIMealPlannerAgent },
     { provide: NOTIFICATION_PORT, useClass: InAppNotificationAdapter },
     { provide: PROFILE_REPO, useClass: ProfilesPrismaRepository },
   ],

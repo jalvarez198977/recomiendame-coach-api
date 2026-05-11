@@ -94,6 +94,11 @@ export class GenerateWeeklyPlanUseCase {
       input.userId,
       'Plan semanal creado',
       `Tu plan para la semana ${input.isoWeek} está listo ✨`,
+      {
+        type: 'PLAN_READY',
+        planId: saved.value.id!,
+        week: input.isoWeek,
+      },
     );
 
     return ok({ planId: saved.value.id!, created: true });
