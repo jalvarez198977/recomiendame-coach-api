@@ -30,11 +30,9 @@ export class MercadoPagoAdapter implements IPaymentPort {
       ? Number(this.configService.get('MP_PLAN_ANNUAL_AMOUNT') ?? 4999)
       : Number(this.configService.get('MP_PLAN_MONTHLY_AMOUNT') ?? 6990);
     const currency = this.configService.get<string>('MP_CURRENCY') ?? 'CLP';
-    // const apiUrl =
-    //   this.configService.get<string>('API_URL') ??
-    //   'https://api-coach.recomiendameapp.cl';
-
-    const apiUrl = 'https://58d8-179-8-155-189.ngrok-free.app';
+    const apiUrl =
+      this.configService.get<string>('API_URL') ??
+      'https://api-coach.recomiendameapp.cl';
     const isTest = this.configService.get('NODE_ENV') !== 'production';
     const payerEmail = isTest
       ? (this.configService.get<string>('MP_TEST_PAYER_EMAIL') ?? input.customerEmail)
