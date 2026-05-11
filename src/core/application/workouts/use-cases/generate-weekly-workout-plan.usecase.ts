@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Result, ok, err } from '../../../domain/common/result';
-import { Week } from '../../../domain/plans/value-objects'; // Reusing Week logic
+import { Week } from '../../../domain/plans/value-objects';
 import { WorkoutPlan } from '../../../domain/workouts/entities';
 import {
   WORKOUT_REPOSITORY,
@@ -11,6 +11,7 @@ import {
   WorkoutPlannerAgentPort,
 } from '../ports/out.workout-planner-agent.port';
 import { PROFILE_REPO, ProfileRepoPort } from '../../profile/ports/out.profile-repo.port';
+import { PushNotificationsService } from '../../../../modules/push-notifications.service';
 
 export interface GenerateWeeklyWorkoutPlanInput {
   userId: string;
@@ -33,6 +34,7 @@ export class GenerateWeeklyWorkoutPlanUseCase {
     @Inject(WORKOUT_REPOSITORY) private readonly workouts: WorkoutRepositoryPort,
     @Inject(WORKOUT_PLANNER_AGENT) private readonly agent: WorkoutPlannerAgentPort,
     @Inject(PROFILE_REPO) private readonly profiles: ProfileRepoPort,
+    private readonly push: PushNotificationsService,
   ) {}
 
   async execute(
@@ -83,6 +85,17 @@ export class GenerateWeeklyWorkoutPlanUseCase {
 
     const saved = await this.workouts.save(plan);
     if (!saved.ok) return err(saved.error);
+
+    // Notificar al usuario que el plan de entrenamiento está listo
+    await this.push.sendToUser(input.userId, {
+      title: 'Rutina de entrenamiento lista',
+      body: `Tu rutina para la semana ${input.isoWeek} está lista 💪`,
+      data: {
+        type: 'WORKOUT_PLAN_READY',
+        planId: saved.value.id!,
+        week: input.isoWeek,
+      },
+    }).catch(() => { /* no bloquear si el push falla */ });
 
     return ok({ planId: saved.value.id!, created: true });
   }
