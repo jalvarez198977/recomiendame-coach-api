@@ -7,6 +7,7 @@ import { MercadoPagoAdapter } from '../infrastructure/mercadopago/mercadopago.ad
 import { CreateCheckoutSessionUseCase } from '../core/application/subscriptions/use-cases/create-checkout-session.usecase';
 import { HandleWebhookUseCase } from '../core/application/subscriptions/use-cases/handle-webhook.usecase';
 import { GetSubscriptionStatusUseCase } from '../core/application/subscriptions/use-cases/get-subscription-status.usecase';
+import { GetSubscriptionPlansUseCase } from '../core/application/subscriptions/use-cases/get-subscription-plans.usecase';
 import { ActivatePlanFromPreapprovalUseCase } from '../core/application/subscriptions/use-cases/activate-plan-from-preapproval.usecase';
 import { CancelSubscriptionUseCase } from '../core/application/subscriptions/use-cases/cancel-subscription.usecase';
 import { PrismaService } from '../infrastructure/database/prisma.service';
@@ -20,6 +21,7 @@ import { PlanExpiryService } from './plan-expiry.service';
     CreateCheckoutSessionUseCase,
     HandleWebhookUseCase,
     GetSubscriptionStatusUseCase,
+    GetSubscriptionPlansUseCase,
     ActivatePlanFromPreapprovalUseCase,
     CancelSubscriptionUseCase,
     PrismaService,

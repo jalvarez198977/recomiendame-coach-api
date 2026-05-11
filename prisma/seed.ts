@@ -95,6 +95,49 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // SubscriptionPlans — planes de suscripción (actualiza si ya existen)
+  const subscriptionPlans = [
+    {
+      id: 'monthly',
+      label: 'Mensual',
+      price: '$6.990',
+      period: '/mes',
+      badge: null,
+      saving: null,
+      mercadoPagoPreapprovalPlanId: process.env.MP_PLAN_MONTHLY_ID ?? '',
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      id: 'annual',
+      label: 'Anual',
+      price: '$4.999',
+      period: '/mes',
+      badge: 'Más popular',
+      saving: '$59.988/año · Ahorra 29%',
+      mercadoPagoPreapprovalPlanId: process.env.MP_PLAN_ANNUAL_ID ?? '',
+      isActive: true,
+      sortOrder: 2,
+    },
+  ];
+
+  for (const plan of subscriptionPlans) {
+    await prisma.subscriptionPlan.upsert({
+      where: { id: plan.id },
+      create: plan,
+      update: {
+        label: plan.label,
+        price: plan.price,
+        period: plan.period,
+        badge: plan.badge,
+        saving: plan.saving,
+        mercadoPagoPreapprovalPlanId: plan.mercadoPagoPreapprovalPlanId,
+        isActive: plan.isActive,
+        sortOrder: plan.sortOrder,
+      },
+    });
+  }
+
   console.log('✅ Seed de catálogos listo');
 }
 

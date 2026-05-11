@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { IPaymentPort, PAYMENT_PORT } from '../ports/out.payment.port';
 import { PrismaService } from '../../../../infrastructure/database/prisma.service';
 
@@ -16,12 +16,25 @@ export class CreateCheckoutSessionUseCase {
     });
 
     if (!user) {
-      throw new Error(`Usuario no encontrado: ${userId}`);
+      throw new NotFoundException(`Usuario no encontrado: ${userId}`);
+    }
+
+    // Resolver el planType: si no viene explícito, inferirlo del planId
+    const resolvedPlanType: 'monthly' | 'annual' = planType ?? (planId === 'annual' ? 'annual' : 'monthly');
+
+    // Buscar el plan en la base de datos para obtener el ID real de Mercado Pago
+    const subscriptionPlan = await this.prisma.subscriptionPlan.findFirst({
+      where: { id: resolvedPlanType, isActive: true },
+      select: { mercadoPagoPreapprovalPlanId: true },
+    });
+
+    if (!subscriptionPlan) {
+      throw new NotFoundException(`Plan de suscripción no encontrado: ${resolvedPlanType}`);
     }
 
     const result = await this.paymentPort.createSubscriptionLink({
-      planId,
-      planType,
+      planId: subscriptionPlan.mercadoPagoPreapprovalPlanId,
+      planType: resolvedPlanType,
       userId,
       customerEmail: user.email,
       successUrl: 'recomiendame://payment-success',

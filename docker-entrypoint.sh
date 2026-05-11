@@ -33,6 +33,8 @@ npx prisma migrate resolve --applied "20260401000001_add_nutrition_product" 2>/d
 npx prisma migrate resolve --applied "20260401000002_add_nutrition_product_fields" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260409000000_add_payment_table" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" 2>/dev/null || true
+npx prisma migrate resolve --applied "20260508000000_add_clerk_id" 2>/dev/null || true
+npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" 2>/dev/null || true
 
 if ! npx prisma migrate deploy 2>&1; then
   echo "⚠️  Error al aplicar migraciones. Haciendo baseline completo..."
@@ -52,6 +54,15 @@ if ! npx prisma migrate deploy 2>&1; then
   npx prisma migrate resolve --applied "20251216000000_add_chapi_context" || true
   npx prisma migrate resolve --applied "20251216000001_add_hydration_goal" || true
   npx prisma migrate resolve --applied "20251226115803_add_user_push_token_model" || true
+  npx prisma migrate resolve --applied "20260224000000_add_user_name_fields" || true
+  npx prisma migrate resolve --applied "20260331000000_add_free_exercise_log" || true
+  npx prisma migrate resolve --applied "20260401000000_add_feature_gating" || true
+  npx prisma migrate resolve --applied "20260401000001_add_nutrition_product" || true
+  npx prisma migrate resolve --applied "20260401000002_add_nutrition_product_fields" || true
+  npx prisma migrate resolve --applied "20260409000000_add_payment_table" || true
+  npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" || true
+  npx prisma migrate resolve --applied "20260508000000_add_clerk_id" || true
+  npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" || true
   
   echo "✅ Baseline completado. Aplicando migraciones pendientes..."
   npx prisma migrate deploy

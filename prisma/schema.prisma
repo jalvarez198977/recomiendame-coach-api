@@ -781,6 +781,23 @@ model UsageLog {
 }
 
 /**
+ * ===== Subscription Plans — catálogo de planes de suscripción =====
+ */
+model SubscriptionPlan {
+  id                          String   @id              // ej. 'monthly' | 'annual'
+  label                       String                    // ej. 'Mensual'
+  price                       String                    // ej. '$6.990'
+  period                      String                    // ej. '/mes'
+  badge                       String?                   // ej. 'Más popular'
+  saving                      String?                   // ej. '$59.988/año · Ahorra 29%'
+  mercadoPagoPreapprovalPlanId String                   // ID del plan en Mercado Pago
+  isActive                    Boolean  @default(true)
+  sortOrder                   Int      @default(0)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}
+
+/**
  * ===== Payments — historial de cobros =====
  */
 model Payment {

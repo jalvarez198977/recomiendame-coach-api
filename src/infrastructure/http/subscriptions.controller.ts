@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateCheckoutSessionUseCase } from '../../core/application/subscriptions/use-cases/create-checkout-session.usecase';
 import { HandleWebhookUseCase } from '../../core/application/subscriptions/use-cases/handle-webhook.usecase';
 import { GetSubscriptionStatusUseCase } from '../../core/application/subscriptions/use-cases/get-subscription-status.usecase';
+import { GetSubscriptionPlansUseCase } from '../../core/application/subscriptions/use-cases/get-subscription-plans.usecase';
 import { ActivatePlanFromPreapprovalUseCase } from '../../core/application/subscriptions/use-cases/activate-plan-from-preapproval.usecase';
 import { CancelSubscriptionUseCase } from '../../core/application/subscriptions/use-cases/cancel-subscription.usecase';
 import { CreateCheckoutDto } from './dto/create-checkout.dto';
@@ -28,10 +29,16 @@ export class SubscriptionsController {
     private readonly createCheckoutSession: CreateCheckoutSessionUseCase,
     private readonly handleWebhook: HandleWebhookUseCase,
     private readonly getSubscriptionStatus: GetSubscriptionStatusUseCase,
+    private readonly getSubscriptionPlans: GetSubscriptionPlansUseCase,
     private readonly activatePlanFromPreapproval: ActivatePlanFromPreapprovalUseCase,
     private readonly cancelSubscription: CancelSubscriptionUseCase,
     private readonly configService: ConfigService,
   ) {}
+
+  @Get('plans')
+  plans() {
+    return this.getSubscriptionPlans.execute();
+  }
 
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
