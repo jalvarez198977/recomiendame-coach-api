@@ -117,10 +117,17 @@ export class HandleWebhookUseCase {
     invoiceId: string,
     payload: Record<string, any>,
   ) {
-    const preapprovalId =
+    // Intentar obtener preapproval_id del payload primero (simulación/test)
+    // En producción real, MP solo envía el invoiceId → consultamos la API
+    let preapprovalId =
       payload.data?.preapproval_id ??
       payload.preapproval_id ??
-      payload.data?.id;
+      null;
+
+    // Si no viene en el payload, consultamos el invoice en MP
+    if (!preapprovalId) {
+      preapprovalId = await this.paymentPort.getInvoicePreapprovalId(invoiceId);
+    }
 
     if (!preapprovalId) {
       this.logger.warn(`subscription_authorized_payment sin preapproval_id, invoiceId=${invoiceId}`);

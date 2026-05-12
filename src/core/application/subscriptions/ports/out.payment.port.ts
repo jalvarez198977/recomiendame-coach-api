@@ -29,6 +29,7 @@ export interface IPaymentPort {
   createSubscriptionLink(input: CreateSubscriptionInput): Promise<{ url: string; subscriptionId: string }>;
   parseWebhookEvent(payload: Record<string, any>): Promise<PaymentWebhookEvent>;
   getSubscription(subscriptionId: string): Promise<SubscriptionData>;
+  getInvoicePreapprovalId(invoiceId: string): Promise<string | null>;
   cancelSubscription(subscriptionId: string): Promise<void>;
 }
 

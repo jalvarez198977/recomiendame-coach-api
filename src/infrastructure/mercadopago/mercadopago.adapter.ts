@@ -102,6 +102,22 @@ export class MercadoPagoAdapter implements IPaymentPort {
     };
   }
 
+  async getInvoicePreapprovalId(invoiceId: string): Promise<string | null> {
+    try {
+      const response = await fetch(
+        `https://api.mercadopago.com/authorized_payments/${invoiceId}`,
+        { headers: { Authorization: `Bearer ${this.configService.get('MP_ACCESS_TOKEN')}` } },
+      );
+      if (!response.ok) return null;
+      const data: any = await response.json();
+      this.logger.log(`Invoice ${invoiceId} → preapproval_id=${data.preapproval_id}`);
+      return data.preapproval_id ?? null;
+    } catch (e) {
+      this.logger.warn(`No se pudo obtener invoice ${invoiceId}: ${(e as Error).message}`);
+      return null;
+    }
+  }
+
   async cancelSubscription(subscriptionId: string): Promise<void> {
     const preApproval = new PreApproval(this.client);
     await preApproval.update({
