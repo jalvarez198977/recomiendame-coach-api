@@ -40,7 +40,7 @@ export class MercadoPagoAdapter implements IPaymentPort {
 
     const body: any = {
       reason: isAnnual ? 'Coach PRO — Plan Anual' : 'Coach PRO — Plan Mensual',
-      external_reference: input.externalReference,
+      external_reference: `${input.externalReference}|${input.planType ?? 'monthly'}`,
       payer_email: payerEmail,
       back_url: `${apiUrl}/subscriptions/payment-return`,
       notification_url: `${apiUrl}/subscriptions/webhook`,
@@ -83,6 +83,12 @@ export class MercadoPagoAdapter implements IPaymentPort {
 
     this.logger.log(`PreApproval raw: ${JSON.stringify(sub)}`);
 
+    // external_reference tiene formato "userId|planType"
+    const rawRef = sub.external_reference ?? '';
+    const [userId, planType] = rawRef.includes('|')
+      ? rawRef.split('|')
+      : [rawRef, null];
+
     return {
       id: sub.id!,
       status: sub.status!,
@@ -91,8 +97,8 @@ export class MercadoPagoAdapter implements IPaymentPort {
         : null,
       payerId: String(sub.payer_id ?? ''),
       payerEmail: (sub as any).payer_email ?? '',
-      externalReference: sub.external_reference ?? '',
-      preapprovalPlanId: (sub as any).preapproval_plan_id ?? null,
+      externalReference: userId,
+      preapprovalPlanId: planType,
     };
   }
 

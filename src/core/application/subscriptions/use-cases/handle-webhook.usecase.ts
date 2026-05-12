@@ -101,17 +101,12 @@ export class HandleWebhookUseCase {
   }
 
   /**
-   * Busca el planType y amount en SubscriptionPlan usando el preapprovalPlanId de MP.
+   * Busca el planType desde el preapprovalPlanId (que ahora contiene el planType directamente).
    */
   private async resolvePlanInfo(preapprovalPlanId: string | null): Promise<{ planType: string }> {
     if (!preapprovalPlanId) return { planType: 'unknown' };
-
-    const plan = await this.prisma.subscriptionPlan.findFirst({
-      where: { mercadoPagoPreapprovalPlanId: preapprovalPlanId },
-      select: { id: true },
-    });
-
-    return { planType: plan?.id ?? 'unknown' };
+    // preapprovalPlanId ahora contiene 'monthly' | 'annual' directamente
+    return { planType: preapprovalPlanId };
   }
 
   /**
