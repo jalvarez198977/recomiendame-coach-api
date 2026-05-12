@@ -16,23 +16,19 @@ export class HandleWebhookUseCase {
 
     this.logger.log(`Webhook recibido: type=${event.type}, resourceId=${event.resourceId}, payload=${JSON.stringify(payload)}`);
 
-    // Manejar pagos de suscripción aprobados (subscription_authorized_payment)
     if (event.type === 'subscription_authorized_payment') {
       await this.handleAuthorizedPayment(event.resourceId, payload);
       return;
     }
 
-    // MercadoPago envía type = 'subscription_preapproval'
     if (event.type !== 'subscription_preapproval') {
       this.logger.log(`Webhook ignorado: type=${event.type}`);
       return;
     }
 
-    // Obtener estado actual de la suscripción desde MP
     const sub = await this.paymentPort.getSubscription(event.resourceId);
     let userId = sub.externalReference;
 
-    // Fallback: buscar usuario por mpPayerId guardado previamente
     if (!userId && sub.payerId) {
       this.logger.warn(`Sin externalReference, buscando por mpPayerId=${sub.payerId}`);
       const user = await this.prisma.user.findUnique({
@@ -42,7 +38,6 @@ export class HandleWebhookUseCase {
       if (user) userId = user.id;
     }
 
-    // Fallback: buscar por email del pagador
     if (!userId && sub.payerEmail) {
       const user = await this.prisma.user.findUnique({ where: { email: sub.payerEmail }, select: { id: true } });
       if (user) userId = user.id;
@@ -55,6 +50,8 @@ export class HandleWebhookUseCase {
 
     switch (sub.status) {
       case 'authorized': {
+        const { planType } = await this.resolvePlanInfo(sub.preapprovalPlanId);
+
         await this.prisma.user.update({
           where: { id: userId },
           data: {
@@ -72,17 +69,16 @@ export class HandleWebhookUseCase {
             preapprovalId: sub.id,
             amount: 0, // monto real viene en authorized_payment
             currency: 'CLP',
-            planType: 'unknown',
+            planType,
             status: 'approved',
           },
         });
-        this.logger.log(`Plan PRO activado para userId=${userId}`);
+        this.logger.log(`Plan PRO activado para userId=${userId}, planType=${planType}`);
         break;
       }
 
       case 'paused':
       case 'cancelled': {
-        // Suscripción cancelada — degradar a FREE
         await this.prisma.user.update({
           where: { id: userId },
           data: {
@@ -95,7 +91,6 @@ export class HandleWebhookUseCase {
       }
 
       case 'pending': {
-        // Pago pendiente — no cambiar plan todavía
         this.logger.log(`Suscripción pendiente para userId=${userId}`);
         break;
       }
@@ -106,6 +101,20 @@ export class HandleWebhookUseCase {
   }
 
   /**
+   * Busca el planType y amount en SubscriptionPlan usando el preapprovalPlanId de MP.
+   */
+  private async resolvePlanInfo(preapprovalPlanId: string | null): Promise<{ planType: string }> {
+    if (!preapprovalPlanId) return { planType: 'unknown' };
+
+    const plan = await this.prisma.subscriptionPlan.findFirst({
+      where: { mercadoPagoPreapprovalPlanId: preapprovalPlanId },
+      select: { id: true },
+    });
+
+    return { planType: plan?.id ?? 'unknown' };
+  }
+
+  /**
    * Maneja subscription_authorized_payment: un pago dentro de una suscripción fue aprobado.
    * MP envía el preapproval_id en el payload para identificar la suscripción.
    */
@@ -113,7 +122,6 @@ export class HandleWebhookUseCase {
     invoiceId: string,
     payload: Record<string, any>,
   ) {
-    // El preapproval_id viene en el payload del authorized_payment
     const preapprovalId =
       payload.data?.preapproval_id ??
       payload.preapproval_id ??
@@ -139,6 +147,9 @@ export class HandleWebhookUseCase {
       return;
     }
 
+    const { planType } = await this.resolvePlanInfo(sub.preapprovalPlanId);
+    const amount = payload.data?.transaction_amount ?? payload.transaction_amount ?? 0;
+
     await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -149,8 +160,6 @@ export class HandleWebhookUseCase {
       },
     });
 
-    // El monto real viene en el payload del authorized_payment
-    const amount = payload.data?.transaction_amount ?? payload.transaction_amount ?? 0;
     await this.prisma.payment.create({
       data: {
         userId,
@@ -159,10 +168,11 @@ export class HandleWebhookUseCase {
         preapprovalId,
         amount: Math.round(Number(amount)),
         currency: 'CLP',
-        planType: 'unknown',
+        planType,
         status: 'approved',
       },
     });
-    this.logger.log(`Plan PRO activado via authorized_payment para userId=${userId}`);
+
+    this.logger.log(`Plan PRO activado via authorized_payment para userId=${userId}, planType=${planType}, amount=${amount}`);
   }
 }

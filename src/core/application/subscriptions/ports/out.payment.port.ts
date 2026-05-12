@@ -22,6 +22,7 @@ export interface SubscriptionData {
   payerId: string;
   payerEmail: string;
   externalReference: string;
+  preapprovalPlanId: string | null; // ID del plan en MP para cruzar con SubscriptionPlan
 }
 
 export interface IPaymentPort {

@@ -92,6 +92,7 @@ export class MercadoPagoAdapter implements IPaymentPort {
       payerId: String(sub.payer_id ?? ''),
       payerEmail: (sub as any).payer_email ?? '',
       externalReference: sub.external_reference ?? '',
+      preapprovalPlanId: (sub as any).preapproval_plan_id ?? null,
     };
   }
 
