@@ -14,6 +14,7 @@ export interface MealWithOwnership {
   ownerId: string;
   ingredients: MealIngredientData[];
   instructions: string | null;
+  imageUrl: string | null;
 }
 
 export interface MealRepositoryPort {

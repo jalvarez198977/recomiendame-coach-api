@@ -24,7 +24,7 @@ export class GetMealDetailsUseCase {
     // Cache hit: ingredientes e instrucciones ya existen en BD
     const isCacheHit = meal.ingredients.length > 0 && meal.instructions !== null;
     if (isCacheHit) {
-      return this.toOutput(meal.id, meal.title, meal.ingredients, meal.instructions!);
+      return this.toOutput(meal.id, meal.title, meal.ingredients, meal.instructions!, meal.imageUrl);
     }
 
     // Cache miss: generar con IA y persistir
@@ -32,7 +32,7 @@ export class GetMealDetailsUseCase {
 
     await this.meals.persistDetails(mealId, details);
 
-    return this.toOutput(meal.id, meal.title, details.ingredients, details.instructions);
+    return this.toOutput(meal.id, meal.title, details.ingredients, details.instructions, meal.imageUrl);
   }
 
   private toOutput(
@@ -40,6 +40,7 @@ export class GetMealDetailsUseCase {
     title: string,
     ingredients: Array<{ name: string; qty?: number; unit?: string; category?: string }>,
     instructions: string,
+    imageUrl?: string | null,
   ): MealDetailsOutput {
     return {
       mealId,
@@ -51,6 +52,7 @@ export class GetMealDetailsUseCase {
         category: i.category ?? null,
       })),
       instructions,
+      imageUrl: imageUrl ?? null,
     };
   }
 }

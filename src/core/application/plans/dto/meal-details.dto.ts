@@ -10,4 +10,5 @@ export interface MealDetailsOutput {
   title: string;
   ingredients: MealDetailsIngredient[];
   instructions: string;
+  imageUrl?: string | null;
 }

@@ -33,6 +33,7 @@ export class PrismaMealRepository implements MealRepositoryPort {
         category: i.category ?? undefined,
       })),
       instructions: meal.instructions ?? null,
+      imageUrl: meal.imageUrl ?? null,
     };
   }
 
