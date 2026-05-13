@@ -21,6 +21,7 @@ export interface Meal {
   tags?: string[];
   ingredients?: MealIngredient[];
   instructions?: string;
+  imageUrl?: string | null;
 }
 
 export interface PlanDay {

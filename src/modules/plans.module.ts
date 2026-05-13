@@ -21,6 +21,7 @@ import { PROFILE_REPO } from 'src/core/application/profile/ports/out.profile-rep
 import { ProfilesPrismaRepository } from 'src/infrastructure/persistence/prisma/profiles.prisma.repository';
 import { MacrosService } from 'src/core/application/plans/services/macros.service';
 import { UnitConverterService } from 'src/core/application/plans/services/unit-converter.service';
+import { PexelsService } from 'src/infrastructure/images/pexels.service';
 
 @Module({
   imports: [PrismaModule],
@@ -37,6 +38,7 @@ import { UnitConverterService } from 'src/core/application/plans/services/unit-c
     MacrosService,
     UnitConverterService,
     PushNotificationsService,
+    PexelsService,
     { provide: PLAN_REPOSITORY, useClass: PlanPrismaRepository },
     { provide: MEAL_PLANNER_AGENT, useClass: OpenAIMealPlannerAgent },
     { provide: NOTIFICATION_PORT, useClass: InAppNotificationAdapter },

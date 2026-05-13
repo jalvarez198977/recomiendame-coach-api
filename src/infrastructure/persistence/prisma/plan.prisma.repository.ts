@@ -99,6 +99,7 @@ export class PlanPrismaRepository implements PlanRepositoryPort {
             fat_g: m.fat_g,
             tags: m.tags ?? [],
             instructions: m.instructions ?? null,
+            imageUrl: m.imageUrl ?? null,
             ingredients: {
               create: (m.ingredients ?? []).map(i => ({
                 name: i.name,
@@ -145,6 +146,7 @@ export class PlanPrismaRepository implements PlanRepositoryPort {
           fat_g: meal.fat_g,
           tags: meal.tags ?? [],
           instructions: meal.instructions ?? null,
+          imageUrl: meal.imageUrl ?? null,
           ingredients: {
             create: (meal.ingredients ?? []).map(i => ({
               name: i.name, qty: i.qty ?? null, unit: i.unit ?? null, category: i.category ?? null,

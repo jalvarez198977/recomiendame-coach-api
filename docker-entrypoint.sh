@@ -35,6 +35,7 @@ npx prisma migrate resolve --applied "20260409000000_add_payment_table" 2>/dev/n
 npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260508000000_add_clerk_id" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" 2>/dev/null || true
+npx prisma migrate resolve --applied "20260513000000_add_meal_image_url" 2>/dev/null || true
 
 if ! npx prisma migrate deploy 2>&1; then
   echo "⚠️  Error al aplicar migraciones. Haciendo baseline completo..."
@@ -63,6 +64,7 @@ if ! npx prisma migrate deploy 2>&1; then
   npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" || true
   npx prisma migrate resolve --applied "20260508000000_add_clerk_id" || true
   npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" || true
+  npx prisma migrate resolve --applied "20260513000000_add_meal_image_url" || true
   
   echo "✅ Baseline completado. Aplicando migraciones pendientes..."
   npx prisma migrate deploy

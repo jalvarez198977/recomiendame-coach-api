@@ -445,6 +445,7 @@ model Meal {
   tags         String[]
   ingredients  MealIngredient[]
   instructions String? // Instrucciones de preparación
+  imageUrl     String? // URL de imagen para el diseño Premium
   logs         MealLog[] // Registros de consumo de esta comida
 
   @@unique([planDayId, slot])

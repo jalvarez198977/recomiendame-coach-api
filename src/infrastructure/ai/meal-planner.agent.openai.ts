@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { MealPlannerAgentPort } from '../../core/application/plans/ports/out.meal-planner-agent.port';
 import { PlanDay } from '../../core/domain/plans/entities';
 import { PrismaService } from '../database/prisma.service';
+import { PexelsService } from '../images/pexels.service';
 import { createHash } from 'crypto';
 
 // ─────────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ const MealSchemaCompact = z.object({
   protein_g: z.coerce.number().int().nonnegative().optional().default(0),
   carbs_g: z.coerce.number().int().nonnegative().optional().default(0),
   fat_g: z.coerce.number().int().nonnegative().optional().default(0),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 const DayResponseSchemaCompact = z.object({
@@ -143,7 +145,10 @@ export class OpenAIMealPlannerAgent implements MealPlannerAgentPort {
   private model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
   private maxTokens = +(5000); // por día / swap
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private pexels: PexelsService,
+  ) {}
 
   // ─────────────────────────────────────────────────────────────
   // Helpers comunes
@@ -437,9 +442,17 @@ export class OpenAIMealPlannerAgent implements MealPlannerAgentPort {
         // Guardar títulos usados
         parsed.data.meals.forEach((m) => usedTitlesThisWeek.add(m.title.toLowerCase()));
 
+        // Enriquecer cada meal con imageUrl desde Pexels (en paralelo)
+        const mealsWithImages = await Promise.all(
+          parsed.data.meals.map(async (m) => ({
+            ...m,
+            imageUrl: await this.pexels.searchFoodImage(m.title),
+          })),
+        );
+
         days.push({
           dayIndex,
-          meals: parsed.data.meals,
+          meals: mealsWithImages,
         });
       }
 
@@ -524,9 +537,17 @@ export class OpenAIMealPlannerAgent implements MealPlannerAgentPort {
         throw new Error(`Validación JSON (draftDayPlan) falló en d${dayIndex}: ${parsed.error.message}`);
       }
 
+      // Enriquecer con imageUrl desde Pexels (en paralelo)
+      const mealsWithImages = await Promise.all(
+        parsed.data.meals.map(async (m) => ({
+          ...m,
+          imageUrl: await this.pexels.searchFoodImage(m.title),
+        })),
+      );
+
       const day: PlanDay = {
         dayIndex,
-        meals: parsed.data.meals as any,
+        meals: mealsWithImages as any,
       };
 
       return { day };
@@ -601,6 +622,9 @@ export class OpenAIMealPlannerAgent implements MealPlannerAgentPort {
 
       // defensa
       if (meal.slot !== target.slot) meal.slot = target.slot as any;
+
+      // Enriquecer con imageUrl desde Pexels
+      meal.imageUrl = await this.pexels.searchFoodImage(meal.title);
 
       return { meal };
     } catch (e: any) {
