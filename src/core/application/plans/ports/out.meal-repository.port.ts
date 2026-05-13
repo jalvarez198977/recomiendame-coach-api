@@ -26,4 +26,5 @@ export interface MealRepositoryPort {
       instructions: string;
     },
   ): Promise<void>;
+  persistImageUrl(mealId: string, imageUrl: string): Promise<void>;
 }

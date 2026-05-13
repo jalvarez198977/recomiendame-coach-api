@@ -22,6 +22,7 @@ import { ProfilesPrismaRepository } from 'src/infrastructure/persistence/prisma/
 import { MacrosService } from 'src/core/application/plans/services/macros.service';
 import { UnitConverterService } from 'src/core/application/plans/services/unit-converter.service';
 import { PexelsService } from 'src/infrastructure/images/pexels.service';
+import { IMAGE_SEARCH_PORT } from 'src/core/application/plans/ports/out.image-search.port';
 
 @Module({
   imports: [PrismaModule],
@@ -39,6 +40,7 @@ import { PexelsService } from 'src/infrastructure/images/pexels.service';
     UnitConverterService,
     PushNotificationsService,
     PexelsService,
+    { provide: IMAGE_SEARCH_PORT, useClass: PexelsService },
     { provide: PLAN_REPOSITORY, useClass: PlanPrismaRepository },
     { provide: MEAL_PLANNER_AGENT, useClass: OpenAIMealPlannerAgent },
     { provide: NOTIFICATION_PORT, useClass: InAppNotificationAdapter },

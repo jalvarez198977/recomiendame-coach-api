@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ImageSearchPort } from '../../core/application/plans/ports/out.image-search.port';
 
 /**
  * Servicio para buscar imágenes de comidas en Pexels.
@@ -6,7 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
  * o null si no encuentra nada o la API falla.
  */
 @Injectable()
-export class PexelsService {
+export class PexelsService implements ImageSearchPort {
   private readonly logger = new Logger(PexelsService.name);
   private readonly apiKey = process.env.PEXELS_API_KEY ?? '';
   private readonly baseUrl = 'https://api.pexels.com/v1';
@@ -20,43 +21,50 @@ export class PexelsService {
       return null;
     }
 
-    // Normalizar el término: quitar palabras genéricas y quedarse con lo esencial
     const query = this.buildQuery(mealTitle);
+    this.logger.log(`[Pexels] Buscando imagen | título: "${mealTitle}" | query: "${query}"`);
 
     if (this.cache.has(query)) {
+      this.logger.log(`[Pexels] Cache hit para query="${query}" → ${this.cache.get(query)}`);
       return this.cache.get(query)!;
     }
 
     try {
       const url = `${this.baseUrl}/search?query=${encodeURIComponent(query)}&per_page=5&orientation=landscape&locale=es-ES`;
+      this.logger.log(`[Pexels] GET ${url}`);
 
       const response = await fetch(url, {
         headers: { Authorization: this.apiKey },
-        signal: AbortSignal.timeout(5000), // 5s máximo para no bloquear la generación
+        signal: AbortSignal.timeout(5000),
       });
 
+      this.logger.log(`[Pexels] HTTP ${response.status} para query="${query}"`);
+
       if (!response.ok) {
-        this.logger.warn(`Pexels respondió ${response.status} para query="${query}"`);
+        const body = await response.text();
+        this.logger.warn(`[Pexels] Error ${response.status} | body: ${body}`);
         this.cache.set(query, null);
         return null;
       }
 
       const data = (await response.json()) as PexelsSearchResponse;
+      this.logger.log(`[Pexels] total_results=${data.total_results} | fotos recibidas=${data.photos?.length ?? 0}`);
+
       const photo = data.photos?.[0];
 
       if (!photo) {
-        // Fallback: buscar solo "food" si no hay resultados específicos
+        this.logger.warn(`[Pexels] Sin resultados para query="${query}", usando fallback`);
         const fallback = await this.fallbackFoodImage();
         this.cache.set(query, fallback);
         return fallback;
       }
 
-      // Usamos "large" (940x650) — buen balance calidad/peso para mobile
       const imageUrl = photo.src.large;
+      this.logger.log(`[Pexels] ✅ Imagen encontrada: ${imageUrl}`);
       this.cache.set(query, imageUrl);
       return imageUrl;
     } catch (err: any) {
-      this.logger.warn(`Error buscando imagen en Pexels para "${mealTitle}": ${err?.message}`);
+      this.logger.warn(`[Pexels] Excepción para "${mealTitle}": ${err?.message}`);
       this.cache.set(query, null);
       return null;
     }

@@ -37,6 +37,13 @@ export class PrismaMealRepository implements MealRepositoryPort {
     };
   }
 
+  async persistImageUrl(mealId: string, imageUrl: string): Promise<void> {
+    await this.prisma.meal.update({
+      where: { id: mealId },
+      data: { imageUrl },
+    });
+  }
+
   async persistDetails(
     mealId: string,
     details: { ingredients: MealIngredientData[]; instructions: string },
