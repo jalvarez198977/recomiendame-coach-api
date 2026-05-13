@@ -51,6 +51,7 @@ export class HandleWebhookUseCase {
     switch (sub.status) {
       case 'authorized': {
         const { planType } = await this.resolvePlanInfo(sub.preapprovalPlanId);
+        const planAmount = await this.resolvePlanAmount(planType);
 
         await this.prisma.user.update({
           where: { id: userId },
@@ -67,13 +68,13 @@ export class HandleWebhookUseCase {
             userId,
             provider: 'mercadopago',
             preapprovalId: sub.id,
-            amount: 0, // monto real viene en authorized_payment
+            amount: planAmount,
             currency: 'CLP',
             planType,
             status: 'approved',
           },
         });
-        this.logger.log(`Plan PRO activado para userId=${userId}, planType=${planType}`);
+        this.logger.log(`Plan PRO activado para userId=${userId}, planType=${planType}, amount=${planAmount}`);
         break;
       }
 
@@ -105,8 +106,23 @@ export class HandleWebhookUseCase {
    */
   private async resolvePlanInfo(preapprovalPlanId: string | null): Promise<{ planType: string }> {
     if (!preapprovalPlanId) return { planType: 'unknown' };
-    // preapprovalPlanId ahora contiene 'monthly' | 'annual' directamente
     return { planType: preapprovalPlanId };
+  }
+
+  /**
+   * Obtiene el monto del plan desde SubscriptionPlan usando el planType.
+   * El price está guardado como string (ej: '$6.990'), lo parseamos a número.
+   */
+  private async resolvePlanAmount(planType: string): Promise<number> {
+    if (planType === 'unknown') return 0;
+    const plan = await this.prisma.subscriptionPlan.findFirst({
+      where: { id: planType },
+      select: { price: true },
+    });
+    if (!plan) return 0;
+    // price puede ser '$6.990' o '6990' — extraemos solo los dígitos
+    const numeric = plan.price.replace(/[^0-9]/g, '');
+    return numeric ? parseInt(numeric, 10) : 0;
   }
 
   /**

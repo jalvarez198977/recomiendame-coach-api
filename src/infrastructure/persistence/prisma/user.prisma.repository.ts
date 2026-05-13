@@ -18,7 +18,7 @@ export class UserPrismaRepository implements UserRepositoryPort {
     passwordHash: string;
   }): Promise<UserEntity> {
     const u = await this.prisma.user.create({
-      data: { id: data.id, email: data.email, password: data.passwordHash, plan: 'PRO' },
+      data: { id: data.id, email: data.email, password: data.passwordHash },
     });
     return new UserEntity({
       id: u.id,
