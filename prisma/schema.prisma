@@ -100,6 +100,7 @@ model User {
   email              String                   @unique
   name               String?
   lastName           String?
+  avatarUrl          String?
   password           String
   emailVerified      Boolean                  @default(false)
   role               UserRole                 @default(USER)

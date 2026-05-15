@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
 
 export enum SexDto { MALE='MALE', FEMALE='FEMALE', OTHER='OTHER', UNSPECIFIED='UNSPECIFIED' }
 export enum ActivityLevelDto { SEDENTARY='SEDENTARY', LIGHT='LIGHT', MODERATE='MODERATE', ACTIVE='ACTIVE', VERY_ACTIVE='VERY_ACTIVE' }
@@ -26,6 +26,13 @@ export class UpdateProfileDto {
   // Información personal
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsString() lastName?: string;
+
+  // Avatar: acepta string (URL) o null explícito para borrar
+  // ValidateIf omite @IsString cuando el valor es null, permitiendo borrar el avatar
+  @IsOptional()
+  @ValidateIf((o) => o.avatarUrl !== null)
+  @IsString()
+  avatarUrl?: string | null;
 
   // Campos básicos existentes
   @IsOptional() @IsEnum(SexDto) sex?: SexDto;

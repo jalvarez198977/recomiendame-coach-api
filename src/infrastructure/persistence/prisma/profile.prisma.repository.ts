@@ -12,6 +12,7 @@ type Intensity = 'LOW' | 'MODERATE' | 'HIGH';
 type UpdatePatch = {
   name?: string | null;
   lastName?: string | null;
+  avatarUrl?: string | null;
   sex?: string;                 // "MALE" | "FEMALE" | "OTHER" | "UNSPECIFIED"
   birthDate?: string;
   heightCm?: number | null;
@@ -113,7 +114,7 @@ export class ProfilePrismaRepository implements ProfileRepoPort {
    */
   async get(userId: string) {
     const [user, p, ua, uc, up] = await Promise.all([
-      this.prisma.user.findUnique({ where: { id: userId }, select: { name: true, lastName: true } }),
+      this.prisma.user.findUnique({ where: { id: userId }, select: { name: true, lastName: true, avatarUrl: true } }),
       this.prisma.userProfile.findUnique({ where: { userId } }),
       this.prisma.userAllergy.findMany({ where: { userId }, include: { allergy: true } }),
       this.prisma.userCondition.findMany({ where: { userId }, include: { condition: true } }),
@@ -124,6 +125,7 @@ export class ProfilePrismaRepository implements ProfileRepoPort {
       userId,
       name: user?.name ?? null,
       lastName: user?.lastName ?? null,
+      avatarUrl: user?.avatarUrl ?? null,
       sex: p?.sex ?? null,
       birthDate: p?.birthDate ?? null,
       heightCm: p?.heightCm ?? null,
@@ -155,13 +157,15 @@ export class ProfilePrismaRepository implements ProfileRepoPort {
     const timeEnum = toTimeFrameEnum(patch.timeFrame);
     const intEnum = toIntensityEnum(patch.intensity);
 
-    // Actualizar campos en la tabla User (name, lastName)
-    if (patch.name !== undefined || patch.lastName !== undefined) {
+    // Actualizar campos en la tabla User (name, lastName, avatarUrl)
+    if (patch.name !== undefined || patch.lastName !== undefined || patch.avatarUrl !== undefined) {
       await this.prisma.user.update({
         where: { id: userId },
         data: {
           ...(patch.name !== undefined && { name: patch.name }),
           ...(patch.lastName !== undefined && { lastName: patch.lastName }),
+          // avatarUrl puede ser string (guardar) o null (borrar)
+          ...(patch.avatarUrl !== undefined && { avatarUrl: patch.avatarUrl }),
         },
       });
     }
@@ -313,5 +317,17 @@ export class ProfilePrismaRepository implements ProfileRepoPort {
         });
       }
     });
+  }
+
+  /**
+   * Actualiza solo el avatar del usuario.
+   */
+  async updateAvatar(userId: string, avatarUrl: string): Promise<{ avatarUrl: string }> {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: { avatarUrl: true },
+    });
+    return { avatarUrl: user.avatarUrl! };
   }
 }

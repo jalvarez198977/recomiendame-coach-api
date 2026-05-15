@@ -151,8 +151,9 @@ export class PostPrismaRepository implements PostRepositoryPort {
           author: { 
             select: { 
               id: true, 
-              email: true,
-              profile: { select: { userId: true } },
+              name: true,
+              lastName: true,
+              avatarUrl: true,
               // Verificar si sigo al autor del post
               followers: {
                 where: { followerId: userId },
@@ -173,13 +174,14 @@ export class PostPrismaRepository implements PostRepositoryPort {
       caption: p.caption,
       createdAt: p.createdAt,
       authorId: p.authorId,
-      authorName: p.author.email, // Usamos email como nombre por ahora
+      authorName: [p.author.name, p.author.lastName].filter(Boolean).join(' ') || p.authorId,
+      authorAvatarUrl: p.author.avatarUrl ?? null,
       mediaUrl: p.media?.url || null,
       likesCount: p._count.likes,
       commentsCount: p._count.comments,
       isLikedByMe: p.likes.length > 0,
       challengeId: p.challengeId,
-      isAuthorFollowedByMe: p.authorId === userId ? undefined : p.author.followers.length > 0, // No mostrar para mis propios posts
+      isAuthorFollowedByMe: p.authorId === userId ? undefined : p.author.followers.length > 0,
     }));
 
     return { items, total };
