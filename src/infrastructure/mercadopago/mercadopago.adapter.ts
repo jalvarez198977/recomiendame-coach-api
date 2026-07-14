@@ -27,8 +27,8 @@ export class MercadoPagoAdapter implements IPaymentPort {
 
     const isAnnual = input.planType === 'annual';
     const amount = isAnnual
-      ? Number(this.configService.get('MP_PLAN_ANNUAL_AMOUNT') ?? 4999)
-      : Number(this.configService.get('MP_PLAN_MONTHLY_AMOUNT') ?? 6990);
+      ? Number(this.configService.get('MP_PLAN_ANNUAL_AMOUNT') ?? 5990)
+      : Number(this.configService.get('MP_PLAN_MONTHLY_AMOUNT') ?? 3990);
     const currency = this.configService.get<string>('MP_CURRENCY') ?? 'CLP';
     const apiUrl =
       this.configService.get<string>('API_URL') ??
