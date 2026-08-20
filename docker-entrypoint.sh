@@ -22,56 +22,12 @@ npx prisma generate
 # Intentar aplicar migraciones, si falla hacer baseline
 echo "🚀 Aplicando migraciones..."
 
-# Primero, resolver cualquier migración fallida marcándola como aplicada
-echo " Resolviendo migraciones fallidas..."
-npx prisma migrate resolve --applied "20250219000000_add_meal_instructions" 2>/dev/null || true
-npx prisma migrate resolve --applied "20251216000001_add_hydration_goal" 2>/dev/null || true
-npx prisma migrate resolve --applied "20251226115803_add_user_push_token_model" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260224000000_add_user_name_fields" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260331000000_add_free_exercise_log" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260401000000_add_feature_gating" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260401000001_add_nutrition_product" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260401000002_add_nutrition_product_fields" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260409000000_add_payment_table" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260508000000_add_clerk_id" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260513000000_add_meal_image_url" 2>/dev/null || true
-npx prisma migrate resolve --applied "20260515000000_add_avatar_url" 2>/dev/null || true
 
 if ! npx prisma migrate deploy 2>&1; then
   echo "⚠️  Error al aplicar migraciones. Haciendo baseline completo..."
   
-  # Marcar todas las migraciones como aplicadas (baseline)
-  echo "📝 Marcando todas las migraciones como aplicadas..."
-  npx prisma migrate resolve --applied "20251009190655_init" || true
-  npx prisma migrate resolve --applied "20250219000000_add_meal_instructions" || true
-  npx prisma migrate resolve --applied "20251010111311_add_password_reset_relation" || true
-  npx prisma migrate resolve --applied "20251010175151_fix_user_relations" || true
-  npx prisma migrate resolve --applied "20251016195348_add_user_role" || true
-  npx prisma migrate resolve --applied "20251017152936_add_email_verification" || true
-  npx prisma migrate resolve --applied "20251022191036_add_account_deletion" || true
-  npx prisma migrate resolve --applied "20251027232858_add_cascade_delete" || true
-  npx prisma migrate resolve --applied "20251128123701_add_workout_coach" || true
-  npx prisma migrate resolve --applied "20251128125900_add_chapi_mind" || true
-  npx prisma migrate resolve --applied "20251205000000_add_workout_completion" || true
-  npx prisma migrate resolve --applied "20251216000000_add_chapi_context" || true
-  npx prisma migrate resolve --applied "20251216000001_add_hydration_goal" || true
-  npx prisma migrate resolve --applied "20251226115803_add_user_push_token_model" || true
-  npx prisma migrate resolve --applied "20260224000000_add_user_name_fields" || true
-  npx prisma migrate resolve --applied "20260331000000_add_free_exercise_log" || true
-  npx prisma migrate resolve --applied "20260401000000_add_feature_gating" || true
-  npx prisma migrate resolve --applied "20260401000001_add_nutrition_product" || true
-  npx prisma migrate resolve --applied "20260401000002_add_nutrition_product_fields" || true
-  npx prisma migrate resolve --applied "20260409000000_add_payment_table" || true
-  npx prisma migrate resolve --applied "20260409000001_add_mp_payer_id" || true
-  npx prisma migrate resolve --applied "20260508000000_add_clerk_id" || true
-  npx prisma migrate resolve --applied "20260511000000_add_subscription_plans" || true
-  npx prisma migrate resolve --applied "20260513000000_add_meal_image_url" || true
-  npx prisma migrate resolve --applied "20260515000000_add_avatar_url" || true
-  
-  echo "✅ Baseline completado. Aplicando migraciones pendientes..."
-  npx prisma migrate deploy
+  echo "📝 Sincronizando esquema directamente con db push por si la BD está vacía o corrupta..."
+  npx prisma db push --accept-data-loss
 fi
 
 echo "✅ Migraciones aplicadas correctamente"
