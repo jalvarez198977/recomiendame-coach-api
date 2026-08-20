@@ -15,6 +15,8 @@ RUN npx prisma generate
 
 RUN npm run build 2>&1; test -f dist/src/main.js || (echo "ERROR: dist/src/main.js no fue generado. El build falló." && exit 1)
 
+# Asegurar explícitamente que los templates se copien a dist (por si nest-cli.json falla)
+RUN mkdir -p dist/src/infrastructure/mailer/templates && cp -r src/infrastructure/mailer/templates/* dist/src/infrastructure/mailer/templates/
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM node:20-alpine
 
