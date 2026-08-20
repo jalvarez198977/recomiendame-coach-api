@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl
 
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm install && npm cache clean --force
 
 COPY . .
 COPY prisma ./prisma
@@ -25,17 +25,19 @@ WORKDIR /app
 RUN apk add --no-cache libc6-compat openssl netcat-openbsd bash postgresql-client
 
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+# Evitar que Prisma descargue engines gigantes en producción (los copiaremos del builder)
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=true
+RUN npm install --omit=dev && npm cache clean --force
 
 COPY --from=builder /app/dist ./dist
+# Copiar cliente generado y binarios de prisma directamente del builder para ahorrar espacio
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY prisma ./prisma
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 COPY public ./public
 
 RUN chmod +x ./docker-entrypoint.sh
-
-RUN npx prisma generate
 
 EXPOSE 3000
 
