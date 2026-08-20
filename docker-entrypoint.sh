@@ -23,7 +23,8 @@ npx prisma generate
 echo "🚀 Aplicando migraciones..."
 
 # Primero, resolver cualquier migración fallida marcándola como aplicada
-echo "� Resolviendo migraciones fallidas..."
+echo " Resolviendo migraciones fallidas..."
+npx prisma migrate resolve --applied "20250219000000_add_meal_instructions" 2>/dev/null || true
 npx prisma migrate resolve --applied "20251216000001_add_hydration_goal" 2>/dev/null || true
 npx prisma migrate resolve --applied "20251226115803_add_user_push_token_model" 2>/dev/null || true
 npx prisma migrate resolve --applied "20260224000000_add_user_name_fields" 2>/dev/null || true
@@ -44,6 +45,7 @@ if ! npx prisma migrate deploy 2>&1; then
   # Marcar todas las migraciones como aplicadas (baseline)
   echo "📝 Marcando todas las migraciones como aplicadas..."
   npx prisma migrate resolve --applied "20251009190655_init" || true
+  npx prisma migrate resolve --applied "20250219000000_add_meal_instructions" || true
   npx prisma migrate resolve --applied "20251010111311_add_password_reset_relation" || true
   npx prisma migrate resolve --applied "20251010175151_fix_user_relations" || true
   npx prisma migrate resolve --applied "20251016195348_add_user_role" || true
