@@ -36,6 +36,8 @@ echo "✅ Migraciones aplicadas correctamente"
 # Si definiste seed (package.json -> prisma.seed), descomenta:
 # npx prisma db seed || true
 
+echo "🔍 DEBUG: Contenido de la carpeta de templates en producción:"
+ls -la /app/dist/src/infrastructure/mailer/templates || echo "⚠️  La carpeta no existe!"
 
 if [ "$NODE_ENV" = "development" ]; then
 echo "🚀 Iniciando la aplicación en modo dev (watch)..."
