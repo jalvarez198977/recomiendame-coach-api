@@ -14,7 +14,7 @@ import { EmailAdapter } from './email.adapter';
       },
       defaults: { from: process.env.MAIL_FROM ?? '"Coach" <no-reply@tu-dominio.com>' },
       template: {
-        dir: process.cwd() + '/templates',
+        dir: require('path').join(__dirname, 'templates'),
         adapter: new HandlebarsAdapter(),
         options: { strict: true },
       },
