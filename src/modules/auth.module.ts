@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { HandlebarsAdapter } = require('@nestjs-modules/mailer/dist/adapters/handlebars.adapter');
+import { AppMailerModule } from '../infrastructure/mailer/mailer.module';
 import { AuthController } from '../infrastructure/http/auth.controller';
 import { LoginUseCase } from '../core/application/auth/use-cases/login.usecase';
 import { TOKEN_SIGNER } from '../core/application/auth/ports/out.token-signer.port';
@@ -40,13 +39,6 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { PrismaModule } from '../infrastructure/database/prisma.module';
 
-const templateDirCandidates = [
-  join(process.cwd(), 'src', 'infrastructure', 'mailer', 'templates'),
-  join(__dirname, '..', 'infrastructure', 'mailer', 'templates'),
-  join(process.cwd(), 'dist', 'src', 'infrastructure', 'mailer', 'templates'),
-  join(process.cwd(), 'dist', 'infrastructure', 'mailer', 'templates'),
-];
-const templateDir = templateDirCandidates.find((dir) => existsSync(dir)) ?? templateDirCandidates[0];
 
 @Module({
   imports: [
@@ -55,25 +47,7 @@ const templateDir = templateDirCandidates.find((dir) => existsSync(dir)) ?? temp
       signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any },
     }),
     PrismaModule,
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.MAIL_HOST,   // p.ej. smtp.gmail.com
-        port: Number(process.env.MAIL_PORT ?? 587),
-        secure: false, // true si usas 465
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS,
-        },
-      },
-      defaults: {
-        from: process.env.MAIL_FROM ?? '"Recomiéndame" <no-reply@recomiendameapp.cl>',
-      },
-      template: {
-        dir: templateDir,
-        adapter: new HandlebarsAdapter(),
-        options: { strict: true },
-      },
-    }),
+    AppMailerModule,
   ],
   controllers: [AuthController, AuthVerifyController, AuthAccountDeletionController, AccountDeletionController, AuthClerkController],
   providers: [
