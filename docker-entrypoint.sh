@@ -26,6 +26,7 @@ echo "🚀 Aplicando migraciones..."
 if ! npx prisma migrate deploy 2>&1; then
   echo "⚠️  Error al aplicar migraciones. Haciendo baseline completo..."
   
+
   echo "📝 Sincronizando esquema directamente con db push por si la BD está vacía o corrupta..."
   npx prisma db push --accept-data-loss
 fi
